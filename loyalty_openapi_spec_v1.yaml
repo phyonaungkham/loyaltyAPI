@@ -1,0 +1,1203 @@
+openapi: 3.0.2
+servers:
+  - url: /api/v1
+info:
+  description: |-
+    This is a Loyalty Server based on the OpenAPI 3.0 specification.
+  version: 1.0.0
+  title: Swagger Loyalty - OpenAPI 3.0
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: user
+    description: Operations about loyalty user
+  - name: member
+    description: Operations about merchant member
+  - name: campaign
+    description: Operations about campaign
+  - name: batch
+    description: Operations about batch upload
+  - name: coupon
+    description: Operations about coupons
+  - name: instantWinning
+    description: Operations about instant winning
+  - name: grandPrize
+    description: Operations about grand prize
+  - name: redeem
+    description: Operations about redeem
+
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'                          
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Created user object
+  /user/createWithList:
+    post:
+      tags:
+        - user
+      summary: Creates list of users with given input array
+      description: 'Creates list of users with given input array'
+      x-swagger-router-controller: UserController
+      operationId: createUsersWithListInput
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'    
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'          
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Logs user into the system
+      description: ''
+      operationId: loginUser
+      security:
+        - apiKey: []
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: false
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string    
+        '400':
+          description: Invalid username/password supplied
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'          
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      security:
+        - apiKey: []
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+  '/users/{username}':
+    get:
+      tags:
+        - user
+      summary: Get user by user name
+      description: ''
+      operationId: getUserByName
+      security:
+        - apiKey: []
+      parameters:
+        - name: username
+          in: path
+          description: 'The name that needs to be fetched. Use user1 for testing. '
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'    
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'          
+    put:
+      tags:
+        - user
+      summary: Update user
+      x-swagger-router-controller: UserController
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      security:
+        - apiKey: []
+      parameters:
+        - name: username
+          in: path
+          description: name that need to be updated
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: successful operation
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'          
+      requestBody:
+        description: Update an existent user in the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      security:
+        - apiKey: []
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'          
+  /member:
+    post:
+      tags:
+        - member
+      summary: Create member
+      description: This can only be done by the logged in user.
+      operationId: createMember
+      security:
+        - apiKey: []
+      responses:
+        default:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Member'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Member'
+        description: Created user object
+  /member/{merchantid}:
+    get:
+      tags:
+        - member
+      summary: Get members from the system
+      description: 'This can only be done by the logged in admin user.'
+      operationId: memberList
+      security:
+        - apiKey: []
+      parameters:
+        - name: merchantid
+          in: path
+          description: 'The merchantid that needs to be fetched. Use merchat1 for testing. '
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Member'    
+        '400':
+          description: Invalid merchantid supplied
+        '404':
+          description: Member not found
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+  /member/{merchantid}/{memberid}:            
+    put:
+      tags:
+        - member
+      summary: Update member
+      x-swagger-router-controller: MemberController
+      description: This can only be done by the logged in admin user.
+      operationId: updateMember
+      security:
+        - apiKey: []
+      parameters:
+        - name: merchantid
+          in: path
+          description: The member that need to be updated
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: successful operation
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        description: Update an existent member in the merchat
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Member'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Member'
+    delete:
+      tags:
+        - member
+      summary: Delete member
+      description: This can only be done by the logged in admin user.
+      operationId: deleteMember
+      security:
+        - apiKey: []
+      parameters:
+        - name: merchantid
+          in: path
+          description: The member that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Invalid merchantid supplied
+        '404':
+          description: Member not found
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'    
+  /campaign:
+      post:
+        tags:
+          - campaign
+        summary: Create Campaign
+        description: This can only be done by the logged in user.
+        operationId: createCampaign
+        security:
+          - apiKey: []
+        responses:
+          default:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Campaign"
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/Campaign'
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'                          
+        requestBody:
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  campaignId:
+                    type: integer
+                    example: 001
+                  name:
+                    type: string
+                  MerchantList:
+                    type: array
+                  startDate:
+                    type: string
+                    format: date
+                  endDate:
+                    type: string
+                    format: date
+                  grandOpeningDate:
+                    type: string
+                    format: date
+                  campaignDescription:
+                    type: string
+                  campaignStatus:
+                    type: string
+                  campaingImageFile:
+                    type: string
+                    format: binary
+                  grandPrizeName:
+                    type: string
+                  grandPrizeQuantity:
+                    type: integer
+                  grandPrizeAmount:
+                    type: integer
+                  grandPrizeImageFile:
+                    type: string
+                    format: binary
+                  instantWinningRule:
+                    type: string
+                  instantWinningFromDate:
+                    type: string
+                    format: date
+                  instantWinningToDate:
+                    type: string
+                    format: date
+                  instantWinningType:
+                    type: string
+                  instantWinningPrize:
+                    type: string
+                  instantWinningQuantity:
+                    type: integer
+                  instantWinningAmount:
+                    type: integer
+          description: Created Campaign object
+  /campaign/{merchantid}:
+      get:
+        tags:
+          - campaign
+        summary: Get campaigns from the system
+        description: 'This can only be done by the logged in admin user.'
+        operationId: campaignList
+        security:
+          - apiKey: []
+        parameters:
+          - name: merchantid
+            in: path
+            description: 'The merchantid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Campaign'
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/Campaign'    
+          '400':
+            description: Invalid merchantid supplied
+          '404':
+            description: Member not found
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'
+  /campaign/{merchantid}/{campaignid}:            
+    put:
+      tags:
+        - campaign
+      summary: Update campaign
+      x-swagger-router-controller: MemberController
+      description: This can only be done by the logged in admin user.
+      operationId: updateCampaign
+      security:
+        - apiKey: []
+      parameters:
+        - name: merchantid
+          in: path
+          description: The campaign that need to be updated
+          required: true
+          schema:
+            type: string
+        - name: campaingnid
+          in: path
+          description: The campaign that need to be updated
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: successful operation
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        description: Update an existent member in the merchat
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Campaign'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Campaign'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Campaign'
+    delete:
+      tags:
+        - campaign
+      summary: Delete campaign
+      description: This can only be done by the logged in admin user.
+      operationId: deleteCampaign
+      security:
+        - apiKey: []
+      parameters:
+        - name: merchantid
+          in: path
+          description: The member that needs to be deleted
+          required: true
+          schema:
+            type: string
+        - name: campaingnid
+          in: path
+          description: The campaign that need to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Invalid merchantid or campaignid supplied
+        '404':
+          description: Campaign not found
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'    
+  /batch:
+      post:
+        tags:
+          - batch
+        summary: Create batch
+        description: This can only be done by the logged in user.
+        operationId: createbatch
+        security:
+          - apiKey: []
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Batch'
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'                          
+        requestBody:
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  batchId:
+                    type: integer
+                    example: 001
+                  reference:
+                    type: string
+                  merchantList:
+                    type: array
+                  campaignList:
+                    type: array
+                  batchStatus:
+                    type: string
+                  uploadFile:
+                    type: string
+                    format: binary
+          description: Created batch object
+  /batch/{merchantid}:
+      get:
+        tags:
+          - batch
+        summary: Get batch from the system
+        description: 'This can only be done by the logged in admin user.'
+        operationId: batchList
+        security:
+          - apiKey: []
+        parameters:
+          - name: merchantid
+            in: path
+            description: 'The merchantid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Batch'
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/Batch'    
+          '400':
+            description: Invalid merchantid supplied
+          '404':
+            description: Member not found
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'
+  /batch/{merchantid}/{batchid}:            
+    put:
+      tags:
+        - batch
+      summary: Update batch
+      x-swagger-router-controller: MemberController
+      description: This can only be done by the logged in admin user.
+      operationId: updatebatch
+      security:
+        - apiKey: []
+      parameters:
+        - name: merchantid
+          in: path
+          description: The batch that need to be updated
+          required: true
+          schema:
+            type: string
+        - name: batchid
+          in: path
+          description: The batch that need to be updated
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        description: Update an existent member in the merchat
+        content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  batchId:
+                    type: integer
+                    example: 001
+                  reference:
+                    type: string
+                  merchantList:
+                    type: array
+                  campaignList:
+                    type: array
+                  batchStatus:
+                    type: string
+                  uploadFile:
+                    type: string
+                    format: binary
+    delete:
+      tags:
+        - batch
+      summary: Delete batch
+      description: This can only be done by the logged in admin user.
+      operationId: deletebatch
+      security:
+        - apiKey: []
+      parameters:
+        - name: merchantid
+          in: path
+          description: The member that needs to be deleted
+          required: true
+          schema:
+            type: string
+        - name: batchid
+          in: path
+          description: The batch that need to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid merchantid or batchid supplied
+        '404':
+          description: batch not found
+        '401':
+            $ref: '#/components/responses/UnauthorizedError'    
+  /coupon/{merchantid}/{compaignid}/{batchid}:
+      get:
+        tags:
+          - coupon
+        summary: Get coupons from the system
+        description: 'This can only be done by the logged in admin user.'
+        operationId: couponList
+        security:
+          - apiKey: []
+        parameters:
+          - name: merchantid
+            in: path
+            description: 'The merchantid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+          - name: compaignid
+            in: path
+            description: 'The compaignid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+          - name: batchid
+            in: path
+            description: 'The batchid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Coupon'
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/Coupon'    
+          '400':
+            description: Invalid merchantid or compaignid or batchid supplied
+          '404':
+            description: Coupon not found
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'
+  /instantwinner/{merchantid}/{compaignid}:
+      get:
+        tags:
+          - instantWinning
+        summary: Get instant winners from the system
+        description: 'This can only be done by the logged in admin user.'
+        operationId: instantWinnerList
+        security:
+          - apiKey: []
+        parameters:
+          - name: merchantid
+            in: path
+            description: 'The merchantid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+          - name: compaignid
+            in: path
+            description: 'The compaignid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/InstantWinning"
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/InstantWinning'    
+          '400':
+            description: Invalid merchantid or compaignid supplied
+          '404':
+            description: Instant Winner not found
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'
+  /grandprize/{merchantid}/{compaignid}:
+      get:
+        tags:
+          - grandPrize
+        summary: Get Grand Prize from the system
+        description: 'This can only be done by the logged in admin user.'
+        operationId: grandPrizeList
+        security:
+          - apiKey: []
+        parameters:
+          - name: merchantid
+            in: path
+            description: 'The merchantid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+          - name: compaignid
+            in: path
+            description: 'The compaignid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/GrandPrizeList"
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/GrandPrizeList'    
+          '400':
+            description: Invalid merchantid or compaignid supplied
+          '404':
+            description: Grand Prize not found
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'
+  /redeem/{merchantid}/{compaignid}:
+      get:
+        tags:
+          - redeem
+        summary: Get Redeem Prize from the system
+        description: 'This can only be done by the logged in admin user.'
+        operationId: redeemPrizeList
+        security:
+          - apiKey: []
+        parameters:
+          - name: merchantid
+            in: path
+            description: 'The merchantid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+          - name: compaignid
+            in: path
+            description: 'The compaignid that needs to be fetched. Use merchat1 for testing. '
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/RedeemList"
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/RedeemList'    
+          '400':
+            description: Invalid merchantid or compaignid supplied
+          '404':
+            description: Redeem Prize not found
+          '401':
+              $ref: '#/components/responses/UnauthorizedError'
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  responses:
+    UnauthorizedError:
+      description: API key is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string    
+  schemas:
+    User:
+      x-swagger-router-model: io.swagger.loyalty.model.User
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        username:
+          type: string
+          example: theUser
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: James
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: 12345
+        phone:
+          type: string
+          example: 12345
+        userStatus:
+          type: integer
+          format: int32
+          example: 1
+          description: User Status
+      xml:
+        name: user
+      type: object
+    Member:
+      x-swagger-router-model: io.swagger.loyalty.model.Member
+      properties:
+        userId:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: theUser
+        merchantList:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/MerchantList'
+        memberType:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/MerchantTypeList'
+        memberRole:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Roles'
+        reference:
+          type: string
+          example: P000004
+        remark:
+          type: string
+          example: Testing
+        memberStatus:
+          type: integer
+          format: int32
+          example: 1
+          description: Member Status
+      xml:
+        name: member
+      type: object
+    MerchantList:
+      x-swagger-router-model: io.swagger.loyalty.model.MerchantList
+      properties:
+        merchants:
+          type: array
+          xml:
+            attribute: false
+            wrapped: false
+          items:
+              type: string
+              xml:  
+                name: Mr.Potato
+    MerchantTypeList:
+      x-swagger-router-model: io.swagger.loyalty.model.MerchantTypeList
+      properties:
+        memberTypes:
+          type: array
+          xml:
+            attribute: false
+            wrapped: false
+          items:
+              type: string
+              xml:  
+                name: Pototo hour
+    Roles:
+      x-swagger-router-model: io.swagger.loyalty.model.Roles
+      properties:
+        roles:
+          type: array
+          xml:
+            attribute: false
+            wrapped: false
+          items:
+              type: string
+              xml:  
+                name: Admin
+    Campaign:
+      x-swagger-router-model: io.swagger.loyalty.model.Campaign
+      properties:
+        campaignId:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: Campaign Name
+        merchantList:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/MerchantList'
+        startDate:
+          type: string
+          format: date
+          example: 2017-07-21
+        endDate:
+          type: string
+          format: date
+          example: 2017-07-21
+        grandOpeningDate:
+          type: string
+          format: date
+          example: 2017-07-21
+        campaignDescription:
+          type: string
+          example: Campaign description
+        campaignStatus:
+          type: integer
+          format: int32
+          example: 1
+          description: 0 = Open, 1 = Closed, 2 = Upcoming
+        campaingImageFile:
+          type: string
+          format: path
+        grandPrizeName:
+          type: string
+        grandPrizeQuantity:
+          type: integer
+        grandPrizeAmount:
+          type: integer
+        grandPrizeImageFile:
+          type: string
+        instantWinningRule:
+          type: string
+        instantWinningFromDate:
+          type: string
+          format: date
+        instantWinningToDate:
+          type: string
+          format: date
+        instantWinningType:
+          type: string
+        instantWinningPrize:
+          type: string
+        instantWinningQuantity:
+          type: integer
+        instantWinningAmount:
+          type: integer
+      xml:
+        name: campaign
+      type: object
+    GrandPrize:
+      x-swagger-router-model: io.swagger.loyalty.model.GrandPrize
+      properties:
+        grandPrizeId:
+          type: integer
+          example: 001
+        grandPrize:
+          type: string
+          example: iphone 11 Pro Max
+        quantity:
+          type: integer
+          example: 1
+    Rules:
+      x-swagger-router-model: io.swagger.loyalty.model.Rules
+      properties:
+        rules:
+          type: string
+          example: Sample Rules
+        merchantList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/MerchantList"
+        campaignsType:
+            type: array
+            items:
+              type: string
+              example: Gift, eLoad
+        prize:
+            type: string
+            example: Prize
+        quantity:
+            type: integer
+            example: 10
+        amount:
+            type: integer
+            example: 10
+    CampaignList:
+      x-swagger-router-model: io.swagger.loyalty.model.CampaignList
+      properties:
+        campaigns:
+          type: array
+          xml:
+            attribute: false
+            wrapped: false
+          items:
+              type: string
+              xml:  
+                name: Potato
+    Batch:
+      x-swagger-router-model: io.swagger.loyalty.model.Batch
+      properties:
+        batchId:
+          type: integer
+          example: 001
+        reference:
+          type: string
+        merchantList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/MerchantList"
+        campaignList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/CampaignList"
+        batchStatus:
+          type: string      
+    Coupon:
+      x-swagger-router-model: io.swagger.loyalty.model.Coupon
+      properties:
+        couponId:
+          type: integer
+          example: 001
+        couponNum:
+          type: integer
+          example: 1
+        userID:
+          type: integer
+          example: user001
+        merchantList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/MerchantList"
+        campaignList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/CampaignList"
+        batchList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Batch"
+    InstantWinning:
+      x-swagger-router-model: io.swagger.loyalty.model.InstantWinning
+      properties:
+        instantWinningId:
+          type: integer
+          example: 001
+        campaignList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/CampaignList"
+        fromToDate:
+          type: string
+          format: date
+        fromToDateIW:
+          type: string
+          format: date
+        toDateIW:
+          type: string
+          format: date
+        prizeIW:
+          type: string
+        quantityIW:
+          type: integer
+        amountIW:
+          type: integer
+        typeIW:
+          type: string
+        winnerQuantityIW:
+          type: integer
+    GrandPrizeList:
+      x-swagger-router-model: io.swagger.loyalty.model.GrandPrizeList
+      properties:
+        grandPrizeId:
+          type: integer
+          example: 001
+        campaignList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/CampaignList"
+        prizeGP:
+          type: string
+        quantityGP:
+          type: integer
+        amountGP:
+          type: integer
+        winnerQuantityGP:
+          type: integer
+        processWinnerQuantityGP:
+          type: integer
+    RedeemList:
+      x-swagger-router-model: io.swagger.loyalty.model.RedeemList
+      properties:
+        campaignList:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/CampaignList"
+        redeemStatus:
+          type: string
+        couponNum:
+          type: integer
+        userId:
+          type: string
+        prizeRD:
+          type: string
+        typeRD:
+          type: string
+
